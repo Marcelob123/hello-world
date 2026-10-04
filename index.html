@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#fff8fb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <title>Agenda Salão</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <div class="mobile-app">
+
+    <!-- TOPO -->
+    <header class="app-header">
+      <div class="header-left">
+        <span class="hello-text">Olá 👋</span>
+        <h1 id="appTitle">Agenda Salão</h1>
+        <p class="today-text" id="todayText">Carregando data...</p>
+      </div>
+
+      <button
+        class="notification-button"
+        type="button"
+        aria-label="Notificações"
+        id="notificationButton"
+      >
+        <span class="bell">🔔</span>
+        <span class="notification-dot" id="notificationDot"></span>
+      </button>
+    </header>
+
+    <!-- CONTEÚDO -->
+    <main class="app-content">
+      <div id="databaseError" class="error-banner hidden" role="alert"></div>
+
+      <!-- INÍCIO -->
+      <section class="screen active" id="screen-inicio">
+
+        <div class="today-card">
+          <div class="today-card-content">
+            <span class="small-label">RESUMO DE HOJE</span>
+
+            <h2>Seu dia está organizado</h2>
+
+            <p>
+              Acompanhe seus atendimentos e mantenha sua agenda sempre em dia.
+            </p>
+
+            <button
+              type="button"
+              class="today-card-button"
+              data-open-screen="agenda"
+            >
+              Ver minha agenda
+            </button>
+          </div>
+
+          <div class="today-card-icon">
+            ✂️
+          </div>
+        </div>
+
+        <div class="section-title">
+          <div>
+            <span class="section-subtitle">PERÍODO</span>
+            <h3>Resumo</h3>
+          </div>
+        </div>
+
+        <div class="period-tabs" id="homePeriodTabs" aria-label="Período do resumo">
+          <button type="button" data-home-period="today" class="active" aria-pressed="true">Hoje</button>
+          <button type="button" data-home-period="month" aria-pressed="false">Mês</button>
+          <button type="button" data-home-period="all" aria-pressed="false">Geral</button>
+        </div>
+        <p class="field-help" id="homePeriodLabel"></p>
+        <div class="summary-grid">
+
+          <article class="summary-card">
+            <div class="summary-icon pink">
+              📅
+            </div>
+
+            <div class="summary-value" id="summaryAppointments">
+              0
+            </div>
+
+            <div class="summary-name">
+              Agendamentos
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon green">
+              ✓
+            </div>
+
+            <div class="summary-value" id="summaryCompleted">
+              0
+            </div>
+
+            <div class="summary-name">
+              Concluídos
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon yellow">
+              ⏳
+            </div>
+
+            <div class="summary-value" id="summaryPending">
+              0
+            </div>
+
+            <div class="summary-name">
+              A atender
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon purple">
+              R$
+            </div>
+
+            <div class="summary-value money" id="summaryRevenue">
+              0
+            </div>
+
+            <div class="summary-name">
+              Recebido registrado
+            </div>
+          </article>
+
+        </div>
+
+        <div class="money-overview" id="homeMoneySummary"></div>
+        <div class="section-title row">
+          <div>
+            <span class="section-subtitle">AGENDAMENTOS</span>
+            <h3 id="homeListTitle">Clientes de hoje</h3>
+          </div>
+
+          <button
+            type="button"
+            class="text-button"
+            data-open-screen="agenda"
+          >
+            Abrir agenda
+          </button>
+        </div>
+
+        <div class="appointments" id="homeAppointments"></div>
+
+      </section>
+
+      <!-- AGENDA -->
+      <section class="screen" id="screen-agenda">
+
+        <div class="page-heading">
+          <span class="section-subtitle">AGENDA</span>
+          <h2>Meus horários</h2>
+          <p>
+            Veja, confirme, conclua ou exclua seus atendimentos.
+          </p>
+        </div>
+
+        <div class="date-strip-heading"><strong id="dateStripMonth"></strong><button type="button" id="agendaTodayButton" class="text-button">Ir para hoje</button></div>
+        <div class="date-strip" id="agendaDateStrip" aria-label="Datas da agenda"></div>
+        <p class="date-legend"><span class="green-dot"></span> Verde: tem clientes agendados. Deslize para ver outros dias.</p>
+        <div class="agenda-date-box">
+          <button type="button" class="calendar-arrow" id="agendaPrevDay">‹</button>
+
+          <label class="agenda-date-center">
+            <span>Data selecionada</span>
+            <input type="date" id="agendaDate">
+          </label>
+
+          <button type="button" class="calendar-arrow" id="agendaNextDay">›</button>
+        </div>
+
+        <div class="agenda-action-row">
+          <div>
+            <span class="section-subtitle" id="agendaWeekdayLabel">HOJE</span>
+            <h3 id="agendaDateLabel">Agenda do dia</h3>
+          </div>
+
+          <button
+            type="button"
+            class="compact-primary-button"
+            data-open-screen="novo"
+          >
+            + Agendar
+          </button>
+        </div>
+
+        <div class="agenda-timeline" id="agendaList"></div>
+
+      </section>
+
+      <!-- NOVO AGENDAMENTO -->
+      <section class="screen" id="screen-novo">
+
+        <div class="page-heading">
+          <span class="section-subtitle">NOVO</span>
+          <h2 id="appointmentFormTitle">Agendamento</h2>
+          <p>
+            Escolha o cliente, adicione os serviços e salve o horário.
+          </p>
+        </div>
+
+        <form class="mobile-form" id="appointmentForm">
+
+          <input type="hidden" id="appointmentId">
+
+          <label class="form-field">
+            <span>Cliente</span>
+
+            <select id="appointmentClient" required>
+              <option value="">Selecione o cliente</option>
+            </select>
+          </label>
+
+          <div class="service-picker">
+            <label class="form-field"><span>Adicionar serviço</span><select id="appointmentService"><option value="">Escolha um serviço</option></select></label>
+            <button type="button" id="addAppointmentService" class="compact-primary-button">+ Adicionar</button>
+          </div>
+          <div id="appointmentServicesList" class="selected-services"></div>
+          <p class="field-help">Adicione quantos serviços precisar. Você pode ajustar o preço combinado de cada um.</p>
+          <div id="appointmentServicesTotals" class="money-overview"></div>
+          <label class="form-field"><span>Desconto no atendimento (R$)</span><input type="number" id="appointmentDiscount" min="0" step="0.01" inputmode="decimal" value="0"></label>
+
+          <div class="form-row">
+
+            <label class="form-field">
+              <span>Data</span>
+
+              <input type="date" id="appointmentDate" required>
+            </label>
+
+            <label class="form-field">
+              <span>Horário</span>
+
+              <input type="time" id="appointmentTime" required>
+            </label>
+
+          </div>
+
+          <div class="form-row">
+
+            <label class="form-field">
+              <span>Total calculado (R$)</span>
+
+              <input
+                type="number"
+                id="appointmentValue"
+                readonly
+                inputmode="decimal"
+                step="0.01"
+                min="0"
+                placeholder="0,00"
+              >
+            </label>
+
+            <label class="form-field">
+              <span>Status</span>
+
+              <select id="appointmentStatus">
+                <option value="pending">Pendente</option>
+                <option value="confirmed">Confirmado</option>
+                <option value="completed">Concluído</option>
+              </select>
+            </label>
+
+          </div>
+
+          <label class="form-field">
+            <span>Pedido do cliente (vai na mensagem)</span>
+            <textarea id="appointmentRequest" rows="3" maxlength="1500" placeholder="Ex.: corte na altura dos ombros, escova lisa..."></textarea>
+          </label>
+          <div class="form-row">
+            <label class="form-field">
+              <span>Valor já pago (R$)</span>
+              <input type="number" id="appointmentPaid" step="0.01" min="0" inputmode="decimal" placeholder="Não informado">
+            </label>
+            <label class="form-field">
+              <span>Forma do pagamento</span>
+              <select id="appointmentPaymentMethod">
+                <option value="">Não informada</option><option value="pix">PIX</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit">Crédito</option><option value="other">Outra forma</option>
+              </select>
+            </label>
+          </div>
+          <p class="field-help">Informe 0 se não pagou; deixe em branco se não souber. Registre o total já recebido. Concluir um atendimento não registra pagamento.</p>
+          <div class="money-overview" id="appointmentPaymentPreview" aria-live="polite"></div>
+          <label class="form-field">
+            <span>Observações internas (não vão na mensagem)</span>
+
+            <textarea
+              rows="4"
+              id="appointmentNotes"
+              placeholder="Digite alguma observação..."
+            ></textarea>
+          </label>
+
+          <button
+            type="submit"
+            class="primary-button"
+          >
+            Salvar agendamento
+          </button>
+
+          <button
+            type="button"
+            class="secondary-button hidden"
+            id="cancelAppointmentEdit"
+          >
+            Cancelar edição
+          </button>
+
+        </form>
+
+      </section>
+
+      <!-- CLIENTES -->
+      <section class="screen" id="screen-clientes">
+
+        <div class="page-heading heading-with-button">
+
+          <div>
+            <span class="section-subtitle">CLIENTES</span>
+            <h2>Meus clientes</h2>
+            <p>
+              Cadastre e organize seus clientes.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="add-client-button"
+            id="openClientModal"
+            aria-label="Adicionar cliente"
+          >
+            +
+          </button>
+
+        </div>
+
+        <div id="clientsOverview" class="clients-overview"></div>
+        <details class="profile-criteria"><summary>Como o perfil do cliente é calculado?</summary><p>Bom histórico: atendimentos concluídos com pagamento informado e saldo zerado. Precisa de atenção: saldo pendente após o procedimento. Pagamento a conferir: atendimento concluído com pagamento desconhecido ou acima do total. Sem histórico: nenhum atendimento concluído. A avaliação usa somente os registros financeiros; não mede respeito, pontualidade ou faltas.</p></details>
+        <label class="form-field"><span>Filtrar perfil dos clientes</span><select id="clientProfileFilter"><option value="all">Todos os clientes</option><option value="good">Bom histórico</option><option value="attention">Precisa de atenção</option><option value="review">Pagamento a conferir</option><option value="new">Sem histórico</option></select></label>
+        <button type="button" class="secondary-button" id="exportClientProfiles">Exportar todos os clientes</button>
+        <p class="field-help" id="clientsFoundLabel"></p>
+        <div class="search-client">
+          <span>🔎</span>
+
+          <input
+            id="clientSearch"
+            type="text"
+            placeholder="Buscar cliente..."
+            autocomplete="off"
+          >
+        </div>
+
+        <div class="clients-list" id="clientsList"></div>
+
+      </section>
+
+      <!-- MENU -->
+      <section class="screen" id="screen-menu">
+
+        <div class="page-heading">
+          <span class="section-subtitle">MENU</span>
+          <h2>Mais opções</h2>
+          <p>
+            Acesse outras áreas do aplicativo.
+          </p>
+        </div>
+
+        <div class="menu-list">
+
+          <button
+            type="button"
+            class="menu-item"
+            id="openServicesScreen"
+          >
+            <span class="menu-item-icon">
+              ✂️
+            </span>
+
+            <span class="menu-item-text">
+              <strong>Serviços</strong>
+              <small>Preços e duração</small>
+            </span>
+
+            <span class="menu-item-arrow">
+              ›
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="menu-item"
+            id="openFinanceScreen"
+          >
+            <span class="menu-item-icon">
+              💰
+            </span>
+
+            <span class="menu-item-text">
+              <strong>Financeiro</strong>
+              <small>Valores, pagamentos e saldos</small>
+            </span>
+
+            <span class="menu-item-arrow">
+              ›
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="menu-item disabled-menu"
+            id="professionalsButton"
+          >
+            <span class="menu-item-icon">
+              👩‍💼
+            </span>
+
+            <span class="menu-item-text">
+              <strong>Profissionais</strong>
+              <small>Será criado em uma próxima etapa</small>
+            </span>
+
+            <span class="menu-item-arrow">
+              ›
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="menu-item"
+            id="openSettingsScreen"
+          >
+            <span class="menu-item-icon">
+              ⚙️
+            </span>
+
+            <span class="menu-item-text">
+              <strong>Configurações</strong>
+              <small>Nome do salão e preferências</small>
+            </span>
+
+            <span class="menu-item-arrow">
+              ›
+            </span>
+          </button>
+
+        </div>
+
+        <div class="app-version">
+          <span>Projeto em desenvolvimento</span>
+          <strong>Etapa 5 • Recebimentos e clientes</strong>
+        </div>
+
+      </section>
+
+      <!-- SERVIÇOS -->
+      <section class="screen" id="screen-servicos">
+
+        <div class="page-heading heading-with-button">
+
+          <div>
+            <span class="section-subtitle">SERVIÇOS</span>
+            <h2>Meus serviços</h2>
+            <p>
+              Cadastre preço e duração dos atendimentos.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="add-client-button"
+            id="openServiceModal"
+            aria-label="Adicionar serviço"
+          >
+            +
+          </button>
+
+        </div>
+
+        <button type="button" class="back-link" data-open-screen="menu">
+          ‹ Voltar ao menu
+        </button>
+
+        <div class="services-list" id="servicesList"></div>
+
+      </section>
+
+      <!-- FINANCEIRO -->
+      <section class="screen" id="screen-financeiro">
+        <div class="page-heading"><span class="section-subtitle">FINANCEIRO</span><h2>Seu dinheiro, claro</h2><p>Veja quanto foi combinado, quanto recebeu e quanto ainda falta por cliente.</p></div>
+        <button type="button" class="back-link" data-open-screen="menu">‹ Voltar ao menu</button>
+        <form id="financeFilters" class="filter-panel">
+          <label class="form-field"><span>Período dos atendimentos</span><select id="financePeriod"><option value="month">Mês atual</option><option value="today">Hoje</option><option value="all">Geral • todos</option><option value="custom">Escolher período</option></select></label>
+          <div id="financeCustomDates" class="form-row hidden"><label class="form-field"><span>De</span><input type="date" id="financeStart"></label><label class="form-field"><span>Até</span><input type="date" id="financeEnd"></label></div>
+          <label class="form-field"><span>Cliente</span><select id="financeClient"><option value="">Todos os clientes</option></select></label>
+          <label class="form-field"><span>Pagamento</span><select id="financePaymentFilter"><option value="all">Todas as situações</option><option value="unpaid">Não pago</option><option value="partial">Pago parcialmente</option><option value="paid">Pago / sem cobrança</option><option value="unknown">Pagamento não informado</option><option value="overpaid">Pagamento acima do total</option></select></label>
+          <label class="form-field"><span>Buscar nome ou serviço</span><input type="search" id="financeSearch" placeholder="Ex.: Ana, corte..."></label>
+          <button type="button" class="secondary-button" id="resetFinanceFilters">Limpar filtros</button>
+        </form>
+        <p class="field-help" id="financeScopeLabel"></p>
+        <div class="finance-metrics" id="financeMetrics"></div>
+        <div class="money-overview" id="financePaymentSummary"></div>
+        <div class="report-tools"><button type="button" class="secondary-button" id="exportFinanceCsv">Exportar relatório CSV</button></div>
+        <div class="section-title"><div><span class="section-subtitle">POR CLIENTE</span><h3>Relatórios dos clientes</h3></div></div>
+        <div id="financeClients" class="finance-list"></div>
+        <div class="section-title"><div><span class="section-subtitle">DETALHADO</span><h3>Todos os atendimentos</h3></div></div>
+        <div class="finance-list" id="financeList"></div>
+      </section>
+
+      <!-- CONFIGURAÇÕES -->
+      <section class="screen" id="screen-configuracoes">
+
+        <div class="page-heading">
+          <span class="section-subtitle">CONFIGURAÇÕES</span>
+          <h2>Preferências</h2>
+          <p>
+            Personalize informações básicas do aplicativo.
+          </p>
+        </div>
+
+        <button type="button" class="back-link" data-open-screen="menu">
+          ‹ Voltar ao menu
+        </button>
+
+        <form class="mobile-form" id="settingsForm">
+
+          <label class="form-field">
+            <span>Nome do salão</span>
+            <input
+              type="text"
+              id="settingsSalonName"
+              maxlength="40"
+              placeholder="Nome do salão"
+            >
+          </label>
+
+          <label class="form-field">
+            <span>Intervalo padrão da agenda</span>
+            <select id="settingsInterval">
+              <option value="15">15 minutos</option>
+              <option value="30">30 minutos</option>
+              <option value="45">45 minutos</option>
+              <option value="60">60 minutos</option>
+            </select>
+          </label>
+
+          <button type="submit" class="primary-button">
+            Salvar configurações
+          </button>
+
+        </form>
+
+      </section>
+
+    </main>
+
+    <!-- NAVEGAÇÃO INFERIOR -->
+    <nav class="bottom-navigation">
+
+      <button
+        type="button"
+        class="nav-button active"
+        data-screen="inicio"
+      >
+        <span class="nav-icon">⌂</span>
+        <span class="nav-text">Início</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-button"
+        data-screen="agenda"
+      >
+        <span class="nav-icon">▣</span>
+        <span class="nav-text">Agenda</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-button nav-add"
+        data-screen="novo"
+        aria-label="Novo agendamento"
+      >
+        <span>+</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-button"
+        data-screen="clientes"
+      >
+        <span class="nav-icon">♙</span>
+        <span class="nav-text">Clientes</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-button"
+        data-screen="menu"
+      >
+        <span class="nav-icon">☰</span>
+        <span class="nav-text">Menu</span>
+      </button>
+
+    </nav>
+
+    <!-- MODAL CLIENTE -->
+    <div class="modal-overlay hidden" id="clientModal">
+      <div class="modal-card">
+
+        <div class="modal-header">
+          <div>
+            <span class="section-subtitle">CLIENTE</span>
+            <h3 id="clientModalTitle">Novo cliente</h3>
+          </div>
+
+          <button type="button" class="modal-close" data-close-modal="clientModal">
+            ×
+          </button>
+        </div>
+
+        <form id="clientForm">
+
+          <input type="hidden" id="clientId">
+
+          <label class="form-field">
+            <span>Nome</span>
+            <input type="text" id="clientName" required maxlength="80">
+          </label>
+
+          <label class="form-field">
+            <span>Telefone / WhatsApp</span>
+            <input type="tel" id="clientPhone" maxlength="20">
+          </label>
+
+          <label class="form-field">
+            <span>Data de nascimento</span>
+            <input type="date" id="clientBirthday">
+          </label>
+
+          <label class="form-field">
+            <span>Observações</span>
+            <textarea id="clientNotes" rows="3"></textarea>
+          </label>
+
+          <button type="submit" class="primary-button">
+            Salvar cliente
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+
+    <!-- MODAL SERVIÇO -->
+    <div class="modal-overlay hidden" id="serviceModal">
+      <div class="modal-card">
+
+        <div class="modal-header">
+          <div>
+            <span class="section-subtitle">SERVIÇO</span>
+            <h3 id="serviceModalTitle">Novo serviço</h3>
+          </div>
+
+          <button type="button" class="modal-close" data-close-modal="serviceModal">
+            ×
+          </button>
+        </div>
+
+        <form id="serviceForm">
+
+          <input type="hidden" id="serviceId">
+
+          <label class="form-field">
+            <span>Nome do serviço</span>
+            <input type="text" id="serviceName" required maxlength="80">
+          </label>
+
+          <div class="form-row">
+
+            <label class="form-field">
+              <span>Preço</span>
+              <input
+                type="number"
+                id="servicePrice"
+                min="0"
+                step="0.01"
+                required
+              >
+            </label>
+
+            <label class="form-field">
+              <span>Duração</span>
+              <select id="serviceDuration" required>
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+                <option value="60">60 min</option>
+                <option value="90">90 min</option>
+                <option value="120">120 min</option>
+                <option value="180">180 min</option>
+              </select>
+            </label>
+
+          </div>
+
+          <label class="form-field">
+            <span>Descrição</span>
+            <textarea id="serviceDescription" rows="3"></textarea>
+          </label>
+
+          <label class="form-field">
+            <span>Mensagem para este serviço</span>
+            <textarea id="serviceMessageTemplate" rows="4" maxlength="2000" placeholder="Deixe em branco para usar a mensagem automática deste serviço."></textarea>
+          </label>
+          <p class="field-help">Personalize o texto. Campos disponíveis: {cliente}, {salao}, {servico}, {data}, {horario}, {valor}. Os valores de pagamento e o resumo completo são acrescentados automaticamente.</p>
+          <button type="button" class="secondary-button" id="useDefaultServiceMessage">Usar texto sugerido</button>
+          <button type="submit" class="primary-button">
+            Salvar serviço
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+
+    <!-- MODAL DE AÇÕES DO AGENDAMENTO -->
+    <div class="modal-overlay hidden" id="appointmentActionsModal">
+      <div class="modal-card action-modal-card">
+
+        <div class="modal-header">
+          <div>
+            <span class="section-subtitle">AGENDAMENTO</span>
+            <h3 id="actionAppointmentTitle">Opções</h3>
+          </div>
+
+          <button
+            type="button"
+            class="modal-close"
+            data-close-modal="appointmentActionsModal"
+          >
+            ×
+          </button>
+        </div>
+
+        <div id="actionAppointmentSummary" class="detail-summary"></div>
+        <div class="appointment-action-buttons">
+          <button type="button" class="action-button" id="actionMessageAppointment">💬 Mensagem para o cliente</button>
+          <button type="button" class="action-button" id="actionPaymentAppointment">💰 Registrar / editar pagamento</button>
+
+          <button
+            type="button"
+            class="action-button"
+            id="actionConfirmAppointment"
+          >
+            ✅ Confirmar
+          </button>
+
+          <button
+            type="button"
+            class="action-button"
+            id="actionCompleteAppointment"
+          >
+            ✔ Concluir atendimento
+          </button>
+
+          <button
+            type="button"
+            class="action-button"
+            id="actionEditAppointment"
+          >
+            ✏️ Editar
+          </button>
+
+          <button
+            type="button"
+            class="action-button danger"
+            id="actionDeleteAppointment"
+          >
+            🗑 Excluir
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="completionModal" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+      <div class="modal-card">
+        <div class="modal-header"><div><span class="section-subtitle">FINALIZAR PROCEDIMENTO</span><h3 id="completionTitle">Confirmar recebimento</h3></div><button type="button" class="modal-close" data-close-modal="completionModal" aria-label="Fechar confirmação">×</button></div>
+        <p class="field-help" id="completionClient"></p>
+        <div id="completionSummary" class="money-overview"></div>
+        <form id="completionForm">
+          <fieldset class="completion-options"><legend>Você recebeu o valor total?</legend>
+            <label><input type="radio" name="completionChoice" value="full" required><span><b>Sim, recebi o total</b><small>Registrar como pago e zerar o saldo deste procedimento.</small></span></label>
+            <label><input type="radio" name="completionChoice" value="partial" required><span><b>Não, ainda falta receber</b><small>Informe o total que já recebeu. Pode ser zero.</small></span></label>
+            <label><input type="radio" name="completionChoice" value="unknown" required><span><b>Ainda preciso conferir</b><small>Manter o pagamento já registrado, sem presumir novos recebimentos.</small></span></label>
+          </fieldset>
+          <div id="completionPaymentFields" class="hidden">
+            <label class="form-field"><span>Total já recebido (R$)</span><input type="number" id="completionPaid" min="0" step="0.01" inputmode="decimal"></label>
+            <label class="form-field"><span>Forma de pagamento</span><select id="completionMethod"><option value="">Não informada</option><option value="pix">PIX</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit">Crédito</option><option value="other">Outra forma</option></select></label>
+          </div>
+          <div id="completionPreview" class="money-overview hidden" aria-live="polite"></div>
+          <button type="submit" class="primary-button" id="saveCompletion">Confirmar e finalizar</button>
+          <button type="button" class="secondary-button" data-close-modal="completionModal">Voltar sem finalizar</button>
+        </form>
+      </div>
+    </div>
+    <div class="modal-overlay hidden" id="messageModal" role="dialog" aria-modal="true" aria-labelledby="messageTitle">
+      <div class="modal-card">
+        <div class="modal-header"><div><span class="section-subtitle">CLIENTE</span><h3 id="messageTitle">Mensagem para o cliente</h3></div><button type="button" class="modal-close" data-close-modal="messageModal" aria-label="Fechar mensagem">×</button></div>
+        <p class="field-help" id="messageContextLabel"></p>
+        <label class="form-field"><span>Tipo de mensagem</span><select id="messageType"><option value="appointment">Resumo do agendamento</option><option value="reminder">Lembrete</option><option value="notice">Aviso</option><option value="thanks">Agradecimento</option><option value="payment">Resumo de pagamento</option></select></label>
+        <label class="form-field"><span>WhatsApp deste agendamento (com DDD)</span><input type="tel" id="messagePhone" maxlength="24" placeholder="Ex.: (37) 99999-1234"></label>
+        <label class="checkbox-field"><input type="checkbox" id="updateClientContact"> Atualizar também o telefone no cadastro do cliente</label>
+        <div id="messageDraftNotice" class="draft-notice hidden"></div>
+        <label class="form-field"><span>Mensagem • pode editar antes de salvar</span><textarea id="messageText" rows="16"></textarea></label>
+        <div class="message-actions"><button type="button" class="primary-button" id="saveClientMessage">Salvar mensagem e contato</button><button type="button" class="whatsapp-button" id="openWhatsappMessage">Abrir conversa no WhatsApp</button><button type="button" class="secondary-button" id="copyMessage">Copiar mensagem</button><button type="button" class="text-button" id="regenerateClientMessage">Gerar novamente com os dados atuais</button><button type="button" class="text-button hidden" id="restoreMessageDraft">Carregar edição salva anterior</button></div>
+        <p class="field-help">O envio é confirmado por você no WhatsApp. Observações internas ficam somente no aplicativo. Salve uma edição para cada tipo de mensagem.</p>
+        <details class="template-settings"><summary>Personalizar modelo deste tipo</summary><label class="form-field"><span>Modelo para os próximos clientes</span><textarea id="messageTemplateEditor" rows="4"></textarea></label><p class="field-help">Use {cliente}, {salao}, {servicos}, {data}, {horario}, {total}, {pago}, {saldo}, {pedido} ou {status}. O detalhamento é acrescentado automaticamente.</p><button type="button" class="secondary-button" id="saveMessageTemplate">Salvar modelo</button><button type="button" class="text-button" id="resetMessageTemplate">Voltar ao modelo pronto</button></details>
+      </div>
+    </div>
+    <div class="modal-overlay hidden" id="clientReportModal" role="dialog" aria-modal="true" aria-labelledby="clientReportTitle">
+      <div class="modal-card report-modal-card">
+        <div class="modal-header"><div><span class="section-subtitle">RELATÓRIO DO CLIENTE</span><h3 id="clientReportTitle">Histórico</h3></div><button type="button" class="modal-close" data-close-modal="clientReportModal" aria-label="Fechar relatório">×</button></div>
+        <div class="period-tabs"><button type="button" data-report-scope="filtered" id="reportFilteredButton">Filtro financeiro</button><button type="button" data-report-scope="all" id="reportAllButton" class="active">Histórico completo</button></div>
+        <div id="clientReportContent"></div>
+        <div class="message-actions"><button type="button" class="primary-button" id="copyClientReport">Copiar relatório</button><button type="button" class="secondary-button" id="downloadClientReport">Baixar relatório em texto</button><button type="button" class="secondary-button" id="printClientReport">Imprimir / salvar PDF</button></div>
+      </div>
+    </div>
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+  </div>
+
+  <script src="js/database.js"></script>
+  <div id="printReport" class="print-report"></div>
+  <script src="js/core.js"></script>
+  <script src="js/messages.js"></script>
+  <script src="js/finance.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
